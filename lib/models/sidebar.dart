@@ -26,7 +26,7 @@ var sidebarItems = [
     ),
   ),
   SidebarItem(
-    title: "Courses",
+    title: "Doctors",
     background: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -37,7 +37,7 @@ var sidebarItems = [
     ),
   ),
   SidebarItem(
-    title: "Billing",
+    title: "Medications",
     background: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -48,14 +48,14 @@ var sidebarItems = [
     ),
   ),
   SidebarItem(
-    title: "Settings",
+    title: "Profile",
     background: const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [Color(0xFF4E62CC), Color(0xFF202A78)],
     ),
     icon: const Icon(
-      Icons.settings,
+      Icons.person,
       color: Colors.white,
     ),
   ),

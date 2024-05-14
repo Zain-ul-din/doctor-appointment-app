@@ -31,7 +31,7 @@ class SidebarScreen extends StatelessWidget {
               radius: 21.0,
             ),
             SizedBox(
-              height: screenSize.height * 0.08,
+              height: screenSize.height * 0.15,
             ),
             SidebarRow(
               sidebarItem: sidebarItems[0],
