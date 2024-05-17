@@ -1,22 +1,75 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:med_app/constants.dart';
+import 'dart:async';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({
-    super.key,
-  });
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:med_app/constants.dart';
+import 'package:med_app/screens/loading_screen.dart';
+import 'package:med_app/screens/login_screen.dart';
+import 'package:med_app/services/auth.dart';
+import 'package:med_app/services/firestore.dart';
+import 'package:med_app/services/models.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _HomeScreen();
+}
+
+class _HomeScreen extends State<HomeScreen> {
+  late StreamSubscription<User?> _userSubscription;
+  User? _user;
+  bool _isLoading = true;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _userSubscription = AuthService().user.listen(
+      (user) {
+        print("Got User");
+        setState(() {
+          _user = user;
+          _isLoading = false;
+        });
+      },
+      onError: (error) {
+        print("Got Error");
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _userSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
+    print("is loading... $_isLoading");
+    print("is error... $_hasError");
+    if (_isLoading || _hasError) {
+      return const LoadingScreen();
+    }
+
+    return _user == null
+        ? LoginScreen()
+        : PageView(children: [mainView(context), mainView(context)]);
+  }
+
+  Scaffold mainView(BuildContext ctx) {
     return Scaffold(
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            header(screenSize),
+            header(),
             contentHeader(title: "Specialization"),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -57,21 +110,42 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             contentHeader(title: "Top Doctors"),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  const SizedBox(width: 8),
-                  doctorCard(),
-                  const SizedBox(width: 8),
-                  doctorCard(),
-                  const SizedBox(width: 8),
-                  doctorCard(),
-                  const SizedBox(width: 8),
-                  doctorCard(),
-                  const SizedBox(width: 8),
-                ],
-              ),
+            FutureBuilder(
+              future: FireStoreService().getTopTenDoctors(),
+              builder: (ctx, snapShot) {
+                if (snapShot.hasError ||
+                    snapShot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                // Ensure that snapShot.data is not null
+                if (!snapShot.hasData || snapShot.data == null) {
+                  return const Center(child: Text("No doctors found"));
+                }
+                var doctors = snapShot.data!;
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 6),
+                      ...doctors.map(
+                        (doctor) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: doctorCard(
+                            model: doctor,
+                            onTap: () {
+                              Navigator.pushNamed(ctx, '/doctor',
+                                  arguments: doctor);
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                  ),
+                );
+              },
             ),
             const SizedBox(
               height: 10,
@@ -141,7 +215,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Container header(Size screenSize) {
+  Container header() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.indigoAccent.shade100,
@@ -154,7 +228,7 @@ class HomeScreen extends StatelessWidget {
         vertical: 14.0,
         horizontal: 14.0,
       ),
-      width: screenSize.width,
+      // width: screenSize.width,
       child: SafeArea(
         child: IntrinsicHeight(
           child: Column(
@@ -203,6 +277,12 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               TextField(
+                onTapOutside: (e) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
+                onTap: () {
+                  // tap
+                },
                 decoration: InputDecoration(
                   hintText: 'Search for doctors...',
                   hintStyle: const TextStyle(color: Colors.grey),
@@ -225,9 +305,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  InkWell doctorCard() {
+  InkWell doctorCard({required DoctorModel model, required Function onTap}) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -263,12 +345,12 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Doctor name",
+                      model.fullName,
                       maxLines: 2,
                       style: kCardTitleStyle.copyWith(height: 1.0),
                     ),
                     Text(
-                      "specialization",
+                      "${model.primarySpecialization}, ${model.secondarySpecializations}",
                       style: kSubtitleStyle.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(
@@ -296,7 +378,7 @@ class HomeScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            "8 Years",
+                            "${model.yearOfExperience} Years",
                             style: kSubtitleStyle.copyWith(
                               color: Colors.white,
                             ),
@@ -315,7 +397,7 @@ class HomeScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            "8 Years",
+                            "0 Patients",
                             style: kSubtitleStyle.copyWith(
                               color: Colors.white,
                             ),

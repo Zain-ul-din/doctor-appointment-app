@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "230854304462",
+    "project_id": "fyp-proj-df4a5",
+    "storage_bucket": "fyp-proj-df4a5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:230854304462:android:32055ae61a50134192669f",
+        "android_client_info": {
+          "package_name": "com.example.med_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "230854304462-c0rebj6bv64ss7gsf6qaevlcnm85ki92.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.med_app",
+            "certificate_hash": "c2363b9f04112c4ea263a18fc699bd5c447b8ab5"
+          }
+        },
+        {
+          "client_id": "230854304462-reielj4nj2eh9dfr499mn457f94r8gr8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmJd8F0RSVhTBxB_KOUvRWRgXvgQQ8jVU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "230854304462-reielj4nj2eh9dfr499mn457f94r8gr8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "230854304462-a37j4pbc3ojsc74p52s73rbn7d88mgnq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.medApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

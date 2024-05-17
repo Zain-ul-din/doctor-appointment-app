@@ -37,6 +37,12 @@ dependencies:
   cupertino_icons: ^1.0.6
   google_nav_bar: ^5.0.6
   provider: ^6.1.2
+  firebase_core: ^2.31.0
+  cloud_firestore: ^4.17.3
+  firebase_auth: ^4.19.5
+  google_sign_in: ^6.2.1
+  json_annotation: ^4.9.0
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:

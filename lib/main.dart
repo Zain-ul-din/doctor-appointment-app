@@ -1,15 +1,62 @@
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:med_app/constants.dart';
+import 'dart:async';
+
+import 'package:med_app/firebase_options.dart';
 import 'package:med_app/screens/doctor_screen.dart';
+import 'package:med_app/screens/home_screen.dart';
+import 'package:med_app/screens/loading_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class App extends StatefulWidget {
+  const App({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  final Future<FirebaseApp> _initFirebaseApp = Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _initFirebaseApp,
+      builder: (context, snapShot) {
+        if (snapShot.hasError) {
+          print("Error");
+          // return loading screen
+          return const Text("Unknown Error Occur in firebase");
+        }
+
+        if (snapShot.connectionState == ConnectionState.done) {
+          return const AppRoutes();
+        }
+
+        return MaterialApp(
+          title: 'Flutter Demo',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            primaryColor: Colors.indigoAccent,
+            useMaterial3: true,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: const LoadingScreen(),
+        );
+      },
+    );
+  }
+}
+
+class AppRoutes extends StatelessWidget {
+  const AppRoutes({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +64,15 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        primaryColor: Colors.indigoAccent,
         useMaterial3: true,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: DoctorScreen(),
+      routes: {
+        '/': (ctx) => const HomeScreen(),
+        '/doctor': (ctx) => const DoctorScreen()
+      },
+      // home: const HomeScreen(),
     );
   }
 }
