@@ -194,3 +194,76 @@ class HealthProviderModel {
     return {'hours': hours, 'minutes': minutes};
   }
 }
+
+@JsonSerializable()
+class AppointmentModel {
+  String patientId;
+  String patientName;
+  String doctorId;
+  String doctorDisplayName;
+  String doctorAvatar;
+  String healthProviderId;
+  String healthProviderLocation;
+  String healthProviderName;
+  String healthProviderAvatar;
+  String slot;
+  String weekDay;
+  Timestamp createdAt;
+  String status;
+  Timestamp appointmentDate;
+
+  AppointmentModel({
+    required this.patientId,
+    required this.patientName,
+    required this.doctorId,
+    required this.doctorDisplayName,
+    required this.doctorAvatar,
+    required this.healthProviderId,
+    required this.healthProviderLocation,
+    required this.healthProviderName,
+    required this.healthProviderAvatar,
+    required this.slot,
+    required this.weekDay,
+    required this.createdAt,
+    required this.status,
+    required this.appointmentDate,
+  });
+
+  factory AppointmentModel.fromJson(Map<String, dynamic> json) {
+    return AppointmentModel(
+      patientId: json['patient_id'],
+      patientName: json['patient_name'],
+      doctorId: json['doctor_id'],
+      doctorDisplayName: json['doctor_display_name'],
+      doctorAvatar: json['doctor_avatar'],
+      healthProviderId: json['health_provider_id'],
+      healthProviderLocation: json['health_provider_location'],
+      healthProviderName: json['health_provider_name'],
+      healthProviderAvatar: json['health_provider_avatar'],
+      slot: json['slot'],
+      weekDay: json['week_day'],
+      createdAt: json['createdAt'] ?? Timestamp.now(),
+      status: json['status'],
+      appointmentDate: json['appointment_date'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'patient_id': patientId,
+      'patient_name': patientName,
+      'doctor_id': doctorId,
+      'doctor_display_name': doctorDisplayName,
+      'doctor_avatar': doctorAvatar,
+      'health_provider_id': healthProviderId,
+      'health_provider_location': healthProviderLocation,
+      'health_provider_name': healthProviderName,
+      'health_provider_avatar': healthProviderAvatar,
+      'slot': slot,
+      'week_day': weekDay,
+      'created_at': createdAt,
+      'status': status,
+      'appointment_date': appointmentDate,
+    };
+  }
+}

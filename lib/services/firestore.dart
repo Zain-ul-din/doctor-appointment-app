@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:med_app/services/auth.dart';
 import 'package:med_app/services/models.dart';
+import 'package:med_app/util.dart';
 
 class FireStoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -196,5 +200,51 @@ class FireStoreService {
     return querySnapshot.docs
         .map((doc) => DoctorModel.fromJson(doc.data()))
         .toList();
+  }
+
+  Future<void> createAppointment({
+    required DoctorModel doctorModel,
+    required HealthProviderModel healthProviderModel,
+    required String selectedSlot,
+    required DateTime appointmentDate,
+  }) async {
+    if (AuthService().getUser == null) return;
+    var user = AuthService().getUser as User;
+    String weekDay = Util().getWeekDayName(appointmentDate.weekday);
+
+    // appointmentDate
+    try {
+      await _db.collection('appointments').add({
+        'patient_id': user.uid,
+        'patient_name': user.displayName,
+        'doctor_id': doctorModel.userId,
+        'doctor_display_name': doctorModel.fullName,
+        'doctor_avatar': doctorModel.photoURL,
+        'health_provider_id': healthProviderModel.id,
+        'health_provider_location': healthProviderModel.location,
+        'health_provider_name': healthProviderModel.name,
+        'health_provider_avatar': healthProviderModel.avatar,
+        'slot': selectedSlot,
+        'week_day': weekDay,
+        'created_at': FieldValue.serverTimestamp(),
+        'status': 'pending',
+        'appointment_date': appointmentDate,
+      });
+      print('Appointment created successfully');
+    } catch (e) {
+      print('Failed to create appointment: $e');
+      throw Exception('Failed to create appointment');
+    }
+  }
+
+  Stream<List<AppointmentModel>> streamAppointmentsByHealthProviderId(
+      String healthProviderId) {
+    return _db
+        .collection('appointments')
+        .where('health_provider_id', isEqualTo: healthProviderId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AppointmentModel.fromJson(doc.data()))
+            .toList());
   }
 }

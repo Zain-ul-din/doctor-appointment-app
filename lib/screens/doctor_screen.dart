@@ -242,6 +242,7 @@ class _DoctorScreen extends State<DoctorScreen> {
         HealthProviderDetailsScreen(
           controller: _panelController,
           model: _selectedProvider,
+          doctorModel: doctor,
         ),
       ]),
     );

@@ -1,17 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:med_app/constants.dart';
+import 'package:med_app/services/firestore.dart';
 import 'package:med_app/services/models.dart';
+import 'package:med_app/util.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class HealthProviderDetailsScreen extends StatefulWidget {
   final PanelController controller;
   final HealthProviderModel? model;
-
-  HealthProviderDetailsScreen({
-    Key? key,
-    required this.controller,
-    required this.model,
-  }) : super(key: key);
+  final DoctorModel? doctorModel;
+  HealthProviderDetailsScreen(
+      {Key? key,
+      required this.controller,
+      required this.model,
+      required this.doctorModel})
+      : super(key: key);
 
   @override
   _HealthProviderDetailsScreenState createState() =>
@@ -22,6 +27,11 @@ class _HealthProviderDetailsScreenState
     extends State<HealthProviderDetailsScreen> {
   late int activeIndex = 0;
   late String activeDay = 'Mon';
+  late DateTime _selectedDay = DateTime.now();
+  final FireStoreService _fireStoreService = FireStoreService();
+  late StreamSubscription<List<AppointmentModel>> _subscription;
+  late List<AppointmentModel> _appointments = [];
+  late List<AppointmentModel> _reservedAppointments = [];
 
   @override
   void initState() {
@@ -29,6 +39,36 @@ class _HealthProviderDetailsScreenState
     DateTime now = DateTime.now();
     activeDay = getDayOfWeek(now.weekday);
     activeIndex = 0; // No card is initially active
+  }
+
+  @override
+  void didUpdateWidget(covariant HealthProviderDetailsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.model != null && oldWidget.model!.id != widget.model!.id) {
+      _subscription.cancel();
+    }
+
+    if (oldWidget.model == null || oldWidget.model!.id != widget.model!.id) {
+      _subscription = _fireStoreService
+          .streamAppointmentsByHealthProviderId(widget.model!.id)
+          .listen((appointments) {
+        setState(() {
+          _appointments = appointments;
+          var weekDay = Util().getWeekDayName(_selectedDay.weekday);
+          _reservedAppointments = _appointments.where((appointment) {
+            return appointment.weekDay == weekDay;
+          }).toList();
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // Unsubscribe from the stream here
+    _subscription.cancel();
   }
 
   @override
@@ -140,6 +180,14 @@ class _HealthProviderDetailsScreenState
                             setState(() {
                               activeIndex = index;
                               activeDay = dayOfWeek;
+                              _selectedDay = currentDate;
+
+                              var weekDay =
+                                  Util().getWeekDayName(currentDate.weekday);
+                              _reservedAppointments =
+                                  _appointments.where((appointment) {
+                                return appointment.weekDay == weekDay;
+                              }).toList();
                             });
                           },
                           child: Row(
@@ -210,9 +258,22 @@ class _HealthProviderDetailsScreenState
                                   children:
                                       widget.model!.getTimeSlots(activeDay).map(
                                     (slot) {
-                                      return timeSlotCard(
-                                        slot: slot,
-                                        active: true,
+                                      var isReserved = _reservedAppointments
+                                          .any((appointment) {
+                                        return appointment.slot == slot;
+                                      });
+                                      return GestureDetector(
+                                        onTap: () {
+                                          if (isReserved) return;
+                                          _showConfirmationDialog(
+                                            context,
+                                            slot,
+                                          );
+                                        },
+                                        child: timeSlotCard(
+                                          slot: slot,
+                                          active: !isReserved,
+                                        ),
                                       );
                                     },
                                   ).toList(),
@@ -239,11 +300,11 @@ class _HealthProviderDetailsScreenState
         vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: active ? Colors.white : Colors.white70,
+        color: active ? Colors.white : Colors.white60,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        slot,
+        active ? slot : "Busy",
         style: const TextStyle(color: Colors.black),
       ),
     );
@@ -299,6 +360,45 @@ class _HealthProviderDetailsScreenState
           )
         ],
       ),
+    );
+  }
+
+// Method to show the confirmation dialog
+  void _showConfirmationDialog(BuildContext context, String slot) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: kBackgroundColor,
+          title: const Text('Confirm Appointment'),
+          content: Text(
+            'Do you want to confirm your appointment for ${_selectedDay.toLocal().toString().split(' ')[0]} $slot?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Confirm',
+              ),
+              onPressed: () {
+                FireStoreService().createAppointment(
+                  doctorModel: widget.doctorModel!,
+                  healthProviderModel: widget.model!,
+                  selectedSlot: slot,
+                  appointmentDate: _selectedDay,
+                );
+                // Add your appointment confirmation logic here
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
