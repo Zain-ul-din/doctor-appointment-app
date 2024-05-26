@@ -22,6 +22,8 @@ class DoctorModel {
   bool? isVerified;
   bool? isRejected;
   String? rejectionReason;
+  final List<String> specialization;
+  final List<String> locations;
 
   DoctorModel({
     required this.title,
@@ -38,6 +40,8 @@ class DoctorModel {
     required this.email,
     required this.photoURL,
     required this.markdown,
+    required this.locations,
+    required this.specialization,
     this.isVerified,
     this.isRejected,
     this.rejectionReason,
@@ -51,6 +55,8 @@ class DoctorModel {
       primarySpecialization: json['primarySpecialization'],
       secondarySpecializations: json['secondarySpecializations'],
       conditionsTreated: List<String>.from(json['conditionsTreated']),
+      locations: List<String>.from(json['locations']),
+      specialization: List<String>.from(json['specialization']),
       pmdcRegistrationNumber: json['pmdcRegistrationNumber'],
       userId: json['userId'],
       createdAt: json['createdAt'],
@@ -95,20 +101,42 @@ class HealthProviderModel {
   late String doctorId;
   late String about;
   late String city;
+  late String avatar;
   late String startTime;
   late String endTime;
   late int waitTime;
   late String googleLocLink;
-  late List<Map<String, String>> monday;
-  late List<Map<String, String>> tuesday;
-  late List<Map<String, String>> wednesday;
-  late List<Map<String, String>> thursday;
-  late List<Map<String, String>> friday;
-  late List<Map<String, String>> saturday;
-  late List<Map<String, String>> sunday;
+  late List<String> monday;
+  late List<String> tuesday;
+  late List<String> wednesday;
+  late List<String> thursday;
+  late List<String> friday;
+  late List<String> saturday;
+  late List<String> sunday;
   late Timestamp createdAt;
   late Timestamp updatedAt;
   late String location;
+
+  List<String> getTimeSlots(String day) {
+    switch (day) {
+      case 'Mon':
+        return monday;
+      case 'Tue':
+        return tuesday;
+      case 'Wed':
+        return wednesday;
+      case 'Thu':
+        return thursday;
+      case 'Fri':
+        return friday;
+      case 'Sat':
+        return saturday;
+      case 'Sun':
+        return sunday;
+      default:
+        return [];
+    }
+  }
 
   HealthProviderModel({
     required this.id,
@@ -130,6 +158,7 @@ class HealthProviderModel {
     required this.updatedAt,
     required this.name,
     required this.location,
+    required this.avatar,
   });
 
   factory HealthProviderModel.fromFirestore(Map<String, dynamic> data) {
@@ -143,15 +172,15 @@ class HealthProviderModel {
       startTime: data['start_time'],
       endTime: data['end_time'],
       waitTime: data['wait_time'],
+      avatar: data['avatar'],
       googleLocLink: data['googleLocLink'],
-      monday: (data['monday'] as List<dynamic>).cast<Map<String, String>>(),
-      tuesday: (data['tuesday'] as List<dynamic>).cast<Map<String, String>>(),
-      wednesday:
-          (data['wednesday'] as List<dynamic>).cast<Map<String, String>>(),
-      thursday: (data['thursday'] as List<dynamic>).cast<Map<String, String>>(),
-      friday: (data['friday'] as List<dynamic>).cast<Map<String, String>>(),
-      saturday: (data['saturday'] as List<dynamic>).cast<Map<String, String>>(),
-      sunday: (data['sunday'] as List<dynamic>).cast<Map<String, String>>(),
+      monday: (data['monday'] as List<dynamic>).cast<String>(),
+      tuesday: (data['tuesday'] as List<dynamic>).cast<String>(),
+      wednesday: (data['wednesday'] as List<dynamic>).cast<String>(),
+      thursday: (data['tuesday'] as List<dynamic>).cast<String>(),
+      friday: (data['friday'] as List<dynamic>).cast<String>(),
+      saturday: (data['saturday'] as List<dynamic>).cast<String>(),
+      sunday: (data['sunday'] as List<dynamic>).cast<String>(),
       createdAt: data['created_at'] as Timestamp,
       updatedAt: data['updated_at'] as Timestamp,
     );

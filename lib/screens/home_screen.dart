@@ -1,7 +1,7 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:med_app/constants.dart';
 import 'package:med_app/screens/loading_screen.dart';
 import 'package:med_app/screens/login_screen.dart';
@@ -27,14 +27,12 @@ class _HomeScreen extends State<HomeScreen> {
     super.initState();
     _userSubscription = AuthService().user.listen(
       (user) {
-        print("Got User");
         setState(() {
           _user = user;
           _isLoading = false;
         });
       },
       onError: (error) {
-        print("Got Error");
         setState(() {
           _hasError = true;
           _isLoading = false;
@@ -51,8 +49,6 @@ class _HomeScreen extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("is loading... $_isLoading");
-    print("is error... $_hasError");
     if (_isLoading || _hasError) {
       return const LoadingScreen();
     }
@@ -64,6 +60,7 @@ class _HomeScreen extends State<HomeScreen> {
 
   Scaffold mainView(BuildContext ctx) {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: Column(
@@ -109,7 +106,12 @@ class _HomeScreen extends State<HomeScreen> {
                 ],
               ),
             ),
-            contentHeader(title: "Top Doctors"),
+            contentHeader(
+              title: "Top Doctors",
+              onTap: () {
+                Navigator.pushNamed(ctx, '/doctors');
+              },
+            ),
             FutureBuilder(
               future: FireStoreService().getTopTenDoctors(),
               builder: (ctx, snapShot) {
@@ -153,6 +155,7 @@ class _HomeScreen extends State<HomeScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: bottomBar(),
     );
   }
 
@@ -188,7 +191,7 @@ class _HomeScreen extends State<HomeScreen> {
     );
   }
 
-  Padding contentHeader({required String title}) {
+  Padding contentHeader({required String title, Function? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
       child: Row(
@@ -201,7 +204,9 @@ class _HomeScreen extends State<HomeScreen> {
           const Spacer(),
           InkWell(
             borderRadius: BorderRadius.circular(4.0),
-            onTap: () {},
+            onTap: () {
+              if (onTap != null) onTap();
+            },
             child: Container(
               padding: const EdgeInsets.all(6),
               child: Text(
@@ -213,6 +218,31 @@ class _HomeScreen extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Widget bottomBar() {
+    return GNav(
+        gap: 8,
+        backgroundColor: Colors.indigoAccent.shade100,
+        color: Colors.white,
+        activeColor: Colors.indigoAccent.shade200,
+        tabBackgroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
+        tabMargin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        tabs: const [
+          GButton(
+            icon: Icons.home,
+            text: 'Home',
+          ),
+          GButton(
+            icon: Icons.calendar_month,
+            text: 'Appointments',
+          ),
+          GButton(
+            icon: Icons.medication_outlined,
+            text: 'Medication',
+          )
+        ]);
   }
 
   Container header() {
@@ -312,6 +342,7 @@ class _HomeScreen extends State<HomeScreen> {
       },
       child: Container(
         padding: const EdgeInsets.all(10),
+        constraints: const BoxConstraints(maxWidth: 300),
         decoration: BoxDecoration(
           color: Colors.indigoAccent.shade100,
           borderRadius: const BorderRadius.all(
@@ -332,80 +363,83 @@ class _HomeScreen extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(
                       12,
                     ), // Adjust the radius as needed
-                    image: const DecorationImage(
+                    image: DecorationImage(
                       image: NetworkImage(
-                        "https://source.unsplash.com/random/100x100",
+                        model.photoURL,
                       ),
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
                 const SizedBox(width: 18),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      model.fullName,
-                      maxLines: 2,
-                      style: kCardTitleStyle.copyWith(height: 1.0),
-                    ),
-                    Text(
-                      "${model.primarySpecialization}, ${model.secondarySpecializations}",
-                      style: kSubtitleStyle.copyWith(color: Colors.white70),
-                    ),
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.yellow),
-                        Text(
-                          "4.5",
-                          style: kBodyLabelStyle.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(children: [
-                      Column(
-                        children: [
-                          const Text(
-                            "Experience",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            "${model.yearOfExperience} Years",
-                            style: kSubtitleStyle.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        model.fullName,
+                        maxLines: 2,
+                        style: kCardTitleStyle.copyWith(height: 1.0),
+                      ),
+                      Text(
+                        "${model.primarySpecialization}, ${model.secondarySpecializations}",
+                        style: kSubtitleStyle.copyWith(color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(
-                        width: 20,
+                        height: 4,
                       ),
-                      Column(
+                      Row(
                         children: [
-                          const Text(
-                            "Patients",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
+                          Icon(Icons.star, color: Colors.yellow),
                           Text(
-                            "0 Patients",
-                            style: kSubtitleStyle.copyWith(
+                            "4.5",
+                            style: kBodyLabelStyle.copyWith(
                               color: Colors.white,
                             ),
                           ),
                         ],
                       ),
-                    ])
-                  ],
+                      const SizedBox(height: 8),
+                      Row(children: [
+                        Column(
+                          children: [
+                            const Text(
+                              "Experience",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              "${model.yearOfExperience} Years",
+                              style: kSubtitleStyle.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Column(
+                          children: [
+                            const Text(
+                              "Patients",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              "0 Patients",
+                              style: kSubtitleStyle.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ])
+                    ],
+                  ),
                 )
               ],
             )

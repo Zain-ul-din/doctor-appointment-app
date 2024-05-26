@@ -1,9 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-
 import 'package:med_app/firebase_options.dart';
 import 'package:med_app/screens/doctor_screen.dart';
+import 'package:med_app/screens/doctors_screen.dart';
 import 'package:med_app/screens/home_screen.dart';
 import 'package:med_app/screens/loading_screen.dart';
 
@@ -70,7 +70,8 @@ class AppRoutes extends StatelessWidget {
       ),
       routes: {
         '/': (ctx) => const HomeScreen(),
-        '/doctor': (ctx) => const DoctorScreen()
+        '/doctor': (ctx) => const DoctorScreen(),
+        '/doctors': (ctx) => const DoctorsScreen()
       },
       // home: const HomeScreen(),
     );
