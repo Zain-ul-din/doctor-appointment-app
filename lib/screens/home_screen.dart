@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:med_app/components/appointment_card.dart';
 import 'package:med_app/constants.dart';
 import 'package:med_app/screens/loading_screen.dart';
 import 'package:med_app/screens/login_screen.dart';
+import 'package:med_app/screens/sidebar_screen.dart';
 import 'package:med_app/services/auth.dart';
 import 'package:med_app/services/firestore.dart';
 import 'package:med_app/services/models.dart';
+import 'package:med_app/shared/DoctorsFilter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -81,19 +84,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return _user == null
         ? LoginScreen()
         : Scaffold(
-            body: PageView(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              children: [
-                mainView(context),
-                appointmentsView(context, _appointments),
-                medicationView(context),
-              ],
-            ),
+            body: Stack(children: [
+              PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+                children: [
+                  mainView(context),
+                  appointmentsView(context, _appointments),
+                  medicationView(context),
+                ],
+              ),
+              // const SidebarScreen()
+            ]),
             bottomNavigationBar: bottomBar(),
           );
   }
@@ -107,39 +113,49 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             header(),
-            contentHeader(title: "Specialization"),
+            contentHeader(
+                title: "Specialization",
+                onTap: () {
+                  Navigator.pushNamed(ctx, '/doctors');
+                }),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
                   const SizedBox(width: 8),
                   specializationCard(
+                    context: context,
                     title: "Gynecologist",
                     imagePath: "assets/images/gynecologist_icon.png",
                   ),
                   const SizedBox(width: 8),
                   specializationCard(
-                    title: "Gynecologist",
+                    context: context,
+                    title: "Cardiologist",
                     imagePath: "assets/images/heart_icon.png",
                   ),
                   const SizedBox(width: 8),
                   specializationCard(
-                    title: "Gynecologist",
+                    context: context,
+                    title: "Neurologist",
                     imagePath: "assets/images/neurology_icon.png",
                   ),
                   const SizedBox(width: 8),
                   specializationCard(
-                    title: "Gynecologist",
+                    context: context,
+                    title: "Gastroenterologist",
                     imagePath: "assets/images/stomach_icon.png",
                   ),
                   const SizedBox(width: 8),
                   specializationCard(
-                    title: "Gynecologist",
+                    context: context,
+                    title: "Pediatrician",
                     imagePath: "assets/images/child_icon.png",
                   ),
                   const SizedBox(width: 8),
                   specializationCard(
-                    title: "Gynecologist",
+                    context: context,
+                    title: "Orthodontist",
                     imagePath: "assets/images/knee-joint_icon.png",
                   ),
                   const SizedBox(width: 8),
@@ -245,9 +261,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   InkWell specializationCard(
-      {required String title, required String imagePath}) {
+      {required String title,
+      required String imagePath,
+      required BuildContext context}) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/doctors',
+          arguments: DoctorsFilter(specialization: title.toLowerCase()),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.indigoAccent.shade100,
@@ -405,6 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   // tap
                 },
+                readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Search for doctors...',
                   hintStyle: const TextStyle(color: Colors.grey),

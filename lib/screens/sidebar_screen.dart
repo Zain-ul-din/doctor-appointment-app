@@ -16,8 +16,8 @@ class SidebarScreen extends StatelessWidget {
       height: screenSize.height,
       width: screenSize.width * 0.85,
       padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 20.0),
-      decoration: const BoxDecoration(
-        color: kSidebarBackgroundColor,
+      decoration: BoxDecoration(
+        color: Colors.indigoAccent.shade100,
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(34.0),
         ),

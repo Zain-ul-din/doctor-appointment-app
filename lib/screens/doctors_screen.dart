@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:med_app/constants.dart';
 import 'package:med_app/services/firestore.dart';
 import 'package:med_app/services/models.dart';
+import 'package:med_app/shared/DoctorsFilter.dart';
+import 'package:search_choices/search_choices.dart';
 
 class DoctorsScreen extends StatefulWidget {
   const DoctorsScreen({Key? key}) : super(key: key);
@@ -30,7 +32,22 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
     _selectedSpecializationNotifier.value = null;
     _selectedConditionNotifier.value = null;
 
-    _refreshDoctors();
+    _extractArguments().then((_) {
+      _refreshDoctors();
+    });
+  }
+
+  Future<void> _extractArguments() async {
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args != null && args is DoctorsFilter) {
+        setState(() {
+          _selectedCityNotifier.value = args.location;
+          _selectedSpecializationNotifier.value = args.specialization;
+          _selectedConditionNotifier.value = args.condition;
+        });
+      }
+    });
   }
 
   @override
@@ -86,120 +103,102 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
           child: Container(
             width: MediaQuery.of(context).size.width,
             padding: const EdgeInsets.all(8.0),
-            child: _buildFilterOptions(),
+            child:
+                _buildFilterOptions(width: MediaQuery.of(context).size.width),
           ),
         );
       },
     );
   }
 
-  Widget _buildFilterOptions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListTile(
-          title: Text('Select City'),
-          trailing: ValueListenableBuilder<String?>(
-            valueListenable: _selectedCityNotifier,
-            builder: (context, value, child) {
-              return DropdownButton<String>(
-                value: value,
-                hint: const Text("Select City"),
-                onChanged: (newValue) {
-                  _selectedCityNotifier.value = newValue;
-                },
-                items: <String>['Lahore', 'Karachi', 'Islamabad']
-                    .map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              );
-            },
+  Widget _buildFilterOptions({required double width}) {
+    return Container(
+      width: width,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Container(
+            width: width,
+            child: SearchChoices.single(
+              items: cities.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              isExpanded: true,
+              value: _selectedCityNotifier.value,
+              hint: 'Select City',
+              onChanged: (newValue) {
+                _selectedCityNotifier.value = newValue;
+              },
+            ),
           ),
-        ),
-        ListTile(
-          title: Text('Select Specialization'),
-          trailing: ValueListenableBuilder<String?>(
-            valueListenable: _selectedSpecializationNotifier,
-            builder: (context, value, child) {
-              return DropdownButton<String>(
-                value: value,
-                hint: const Text("Select Specialization"),
-                onChanged: (newValue) {
-                  _selectedSpecializationNotifier.value = newValue;
-                },
-                items: <String>[
-                  'dentist',
-                  'Cardiologist',
-                  'Pediatrician',
-                  'Oncologist'
-                ].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              );
-            },
+          Container(
+            width: double.infinity,
+            child: SearchChoices.single(
+              items: specializations.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              isExpanded: true,
+              value: _selectedSpecializationNotifier.value,
+              hint: 'Select Specialization',
+              onChanged: (newValue) {
+                _selectedSpecializationNotifier.value = newValue;
+              },
+            ),
           ),
-        ),
-        ListTile(
-          title: Text('Select Condition'),
-          trailing: ValueListenableBuilder<String?>(
-            valueListenable: _selectedConditionNotifier,
-            builder: (context, value, child) {
-              return DropdownButton<String>(
-                value: value,
-                hint: const Text("Select Condition"),
-                onChanged: (newValue) {
-                  _selectedConditionNotifier.value = newValue;
-                },
-                items: <String>[
-                  'Heart Disease',
-                  'Diabetes',
-                  'Asthma',
-                  'Arthritis'
-                ].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              );
-            },
+          Container(
+            width: double.infinity,
+            child: SearchChoices.single(
+              items: conditions.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              isExpanded: true,
+              value: _selectedConditionNotifier.value,
+              hint: 'Select Condition',
+              onChanged: (newValue) {
+                _selectedConditionNotifier.value = newValue;
+              },
+            ),
           ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-            _refreshDoctors();
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.indigoAccent.shade100,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _refreshDoctors();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigoAccent.shade100,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                    weight: 32,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Search',
+                    style: kCardTitleStyle,
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: const Text(
-            'Apply Filters',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            _selectedCityNotifier.value = null;
-            _selectedSpecializationNotifier.value = null;
-            _selectedConditionNotifier.value = null;
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.redAccent,
-          ),
-          child: const Text(
-            'Reset Filters',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

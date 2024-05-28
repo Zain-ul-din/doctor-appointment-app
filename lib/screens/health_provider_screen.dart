@@ -11,7 +11,7 @@ class HealthProviderDetailsScreen extends StatefulWidget {
   final PanelController controller;
   final HealthProviderModel? model;
   final DoctorModel? doctorModel;
-  HealthProviderDetailsScreen(
+  const HealthProviderDetailsScreen(
       {Key? key,
       required this.controller,
       required this.model,
