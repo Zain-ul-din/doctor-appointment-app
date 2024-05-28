@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:med_app/components/appointment_card.dart';
 import 'package:med_app/constants.dart';
 import 'package:med_app/screens/loading_screen.dart';
 import 'package:med_app/screens/login_screen.dart';
@@ -13,18 +14,25 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _HomeScreen();
+  State<StatefulWidget> createState() => _HomeScreenState();
 }
 
-class _HomeScreen extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   late StreamSubscription<User?> _userSubscription;
   User? _user;
   bool _isLoading = true;
   bool _hasError = false;
+  late PageController _pageController;
+  int _selectedIndex = 0;
+  late Future<List<DoctorModel>> _doctorsFuture;
+  late StreamSubscription<List<AppointmentModel>> _appointmentsSubscription;
+  List<AppointmentModel> _appointments = [];
+  bool _appointmentsLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _userSubscription = AuthService().user.listen(
       (user) {
         setState(() {
@@ -39,11 +47,28 @@ class _HomeScreen extends State<HomeScreen> {
         });
       },
     );
+    _appointmentsSubscription = FireStoreService()
+        .streamAppointmentsByPatientId()
+        .listen((appointments) {
+      setState(() {
+        _appointments = appointments;
+        _appointmentsLoading =
+            false; // Set to false when appointments are loaded
+      });
+    }, onError: (error) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    });
+    _doctorsFuture = FireStoreService().getTopTenDoctors();
   }
 
   @override
   void dispose() {
     _userSubscription.cancel();
+    _appointmentsSubscription.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -55,7 +80,22 @@ class _HomeScreen extends State<HomeScreen> {
 
     return _user == null
         ? LoginScreen()
-        : PageView(children: [mainView(context), mainView(context)]);
+        : Scaffold(
+            body: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+              children: [
+                mainView(context),
+                appointmentsView(context, _appointments),
+                medicationView(context),
+              ],
+            ),
+            bottomNavigationBar: bottomBar(),
+          );
   }
 
   Scaffold mainView(BuildContext ctx) {
@@ -112,8 +152,8 @@ class _HomeScreen extends State<HomeScreen> {
                 Navigator.pushNamed(ctx, '/doctors');
               },
             ),
-            FutureBuilder(
-              future: FireStoreService().getTopTenDoctors(),
+            FutureBuilder<List<DoctorModel>>(
+              future: _doctorsFuture,
               builder: (ctx, snapShot) {
                 if (snapShot.hasError ||
                     snapShot.connectionState == ConnectionState.waiting) {
@@ -155,7 +195,52 @@ class _HomeScreen extends State<HomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: bottomBar(),
+    );
+  }
+
+  Scaffold appointmentsView(
+      BuildContext ctx, List<AppointmentModel> appointments) {
+    return Scaffold(
+        backgroundColor: Colors.indigoAccent.shade100,
+        appBar: AppBar(
+          backgroundColor: Colors.indigoAccent.shade100,
+          title: Text(
+            "Appointments",
+            style: kCardTitleStyle,
+          ),
+        ),
+        body: _appointmentsLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              )
+            : appointments.isEmpty
+                ? Center(
+                    child: Text(
+                      "No Appointments",
+                      style: kTitle1Style.copyWith(color: Colors.white),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: appointments.map((appointment) {
+                        return AppointmentCard(appointment: appointment);
+                      }).toList(),
+                    ),
+                  ));
+  }
+
+  Scaffold medicationView(BuildContext ctx) {
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
+      body: Center(
+        child: Text(
+          "Medication",
+          style: kTitle1Style,
+        ),
+      ),
     );
   }
 
@@ -222,27 +307,35 @@ class _HomeScreen extends State<HomeScreen> {
 
   Widget bottomBar() {
     return GNav(
-        gap: 8,
-        backgroundColor: Colors.indigoAccent.shade100,
-        color: Colors.white,
-        activeColor: Colors.indigoAccent.shade200,
-        tabBackgroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
-        tabMargin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        tabs: const [
-          GButton(
-            icon: Icons.home,
-            text: 'Home',
-          ),
-          GButton(
-            icon: Icons.calendar_month,
-            text: 'Appointments',
-          ),
-          GButton(
-            icon: Icons.medication_outlined,
-            text: 'Medication',
-          )
-        ]);
+      gap: 8,
+      backgroundColor: Colors.indigoAccent.shade100,
+      color: Colors.white,
+      activeColor: Colors.indigoAccent.shade200,
+      tabBackgroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
+      tabMargin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      selectedIndex: _selectedIndex,
+      onTabChange: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+        _pageController.jumpToPage(index);
+      },
+      tabs: const [
+        GButton(
+          icon: Icons.home,
+          text: 'Home',
+        ),
+        GButton(
+          icon: Icons.calendar_month,
+          text: 'Appointments',
+        ),
+        GButton(
+          icon: Icons.medication_outlined,
+          text: 'Medication',
+        ),
+      ],
+    );
   }
 
   Container header() {
@@ -258,7 +351,6 @@ class _HomeScreen extends State<HomeScreen> {
         vertical: 14.0,
         horizontal: 14.0,
       ),
-      // width: screenSize.width,
       child: SafeArea(
         child: IntrinsicHeight(
           child: Column(
@@ -360,13 +452,9 @@ class _HomeScreen extends State<HomeScreen> {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(
-                      12,
-                    ), // Adjust the radius as needed
+                    borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
-                      image: NetworkImage(
-                        model.photoURL,
-                      ),
+                      image: NetworkImage(model.photoURL),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -386,9 +474,7 @@ class _HomeScreen extends State<HomeScreen> {
                         style: kSubtitleStyle.copyWith(color: Colors.white70),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(
-                        height: 4,
-                      ),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(Icons.star, color: Colors.yellow),
@@ -401,48 +487,48 @@ class _HomeScreen extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Row(children: [
-                        Column(
-                          children: [
-                            const Text(
-                              "Experience",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              "${model.yearOfExperience} Years",
-                              style: kSubtitleStyle.copyWith(
-                                color: Colors.white,
+                      Row(
+                        children: [
+                          Column(
+                            children: [
+                              const Text(
+                                "Experience",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Column(
-                          children: [
-                            const Text(
-                              "Patients",
-                              style: TextStyle(
+                              Text(
+                                "${model.yearOfExperience} Years",
+                                style: kSubtitleStyle.copyWith(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              "0 Patients",
-                              style: kSubtitleStyle.copyWith(
-                                color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ])
+                            ],
+                          ),
+                          const SizedBox(width: 20),
+                          Column(
+                            children: [
+                              const Text(
+                                "Patients",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                "0 Patients",
+                                style: kSubtitleStyle.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
                     ],
                   ),
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

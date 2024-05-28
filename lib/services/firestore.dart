@@ -42,6 +42,26 @@ class FireStoreService {
     }).toList();
   }
 
+  Stream<List<AppointmentModel>> streamAppointmentsByPatientId() {
+    // Get the current logged-in user
+    final currentUser = AuthService().getUser;
+
+    // Check if user is logged in
+    if (currentUser != null) {
+      // Stream appointments where patient_id matches current user's ID
+      return _db
+          .collection('appointments')
+          .where('patient_id', isEqualTo: currentUser.uid)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromJson(doc.data()))
+              .toList());
+    } else {
+      // If user is not logged in, return an empty stream
+      return Stream.value([]);
+    }
+  }
+
   // Future<QuerySnapshot> getDoctorsWithPagination(
   //   DocumentSnapshot? lastDocument, {
   //   String? location,
