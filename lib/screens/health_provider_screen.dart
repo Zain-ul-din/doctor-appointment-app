@@ -29,7 +29,7 @@ class _HealthProviderDetailsScreenState
   late String activeDay = 'Mon';
   late DateTime _selectedDay = DateTime.now();
   final FireStoreService _fireStoreService = FireStoreService();
-  late StreamSubscription<List<AppointmentModel>> _subscription;
+  StreamSubscription<List<AppointmentModel>>? _subscription;
   late List<AppointmentModel> _appointments = [];
   late List<AppointmentModel> _reservedAppointments = [];
 
@@ -46,7 +46,7 @@ class _HealthProviderDetailsScreenState
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.model != null && oldWidget.model!.id != widget.model!.id) {
-      _subscription.cancel();
+      _subscription?.cancel();
     }
 
     if (oldWidget.model == null || oldWidget.model!.id != widget.model!.id) {
@@ -67,8 +67,7 @@ class _HealthProviderDetailsScreenState
   @override
   void dispose() {
     super.dispose();
-    // Unsubscribe from the stream here
-    _subscription.cancel();
+    _subscription?.cancel();
   }
 
   @override
@@ -94,13 +93,9 @@ class _HealthProviderDetailsScreenState
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(
-                                12,
-                              ), // Adjust the radius as needed
+                              borderRadius: BorderRadius.circular(12),
                               image: DecorationImage(
-                                image: NetworkImage(
-                                  widget.model!.avatar,
-                                ),
+                                image: NetworkImage(widget.model!.avatar),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -124,9 +119,6 @@ class _HealthProviderDetailsScreenState
                                 const SizedBox(height: 2),
                                 ElevatedButton.icon(
                                   onPressed: () {
-                                    // Open Google Maps with the provider's location
-                                    // You need to integrate Google Maps in your app and pass the location to it
-                                    // For demonstration purposes, I'll just print the location here
                                     print(
                                         'Viewing ${widget.model!.name} on Google Maps');
                                   },
@@ -139,11 +131,10 @@ class _HealthProviderDetailsScreenState
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(3),
                                     ),
-                                    elevation:
-                                        1, // Adds a subtle elevation to the button
+                                    elevation: 1,
                                   ),
                                   icon: const Icon(
-                                    Icons.map, // Google Maps icon
+                                    Icons.map,
                                     color: Colors.black,
                                   ),
                                   label: const Text(
@@ -172,9 +163,7 @@ class _HealthProviderDetailsScreenState
                         DateTime currentDate = DateTime.now().add(
                           Duration(days: index),
                         );
-                        String dayOfWeek = getDayOfWeek(
-                          currentDate.weekday,
-                        );
+                        String dayOfWeek = getDayOfWeek(currentDate.weekday);
                         return GestureDetector(
                           onTap: () {
                             setState(() {
@@ -229,56 +218,64 @@ class _HealthProviderDetailsScreenState
                         color: Colors.indigoAccent.shade100,
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Text(
-                              "Time Slots",
-                              style: kCardTitleStyle,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
+                          mainAxisSize:
+                              MainAxisSize.min, // Set the mainAxisSize to min
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Text(
+                                "Time Slots",
+                                style: kCardTitleStyle,
+                              ),
                             ),
-                          ),
-                          widget.model!.getTimeSlots(activeDay).isEmpty
-                              ? Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      "Not Available",
-                                      style: kCardSubtitleStyle.copyWith(
-                                        fontSize: 16,
+                            widget.model!.getTimeSlots(activeDay).isEmpty
+                                ? Flexible(
+                                    // Use Flexible instead of Expanded
+                                    child: Center(
+                                      child: Text(
+                                        "Not Available",
+                                        style: kCardSubtitleStyle.copyWith(
+                                          fontSize: 16,
+                                        ),
                                       ),
                                     ),
+                                  )
+                                : Wrap(
+                                    direction: Axis.horizontal,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    runAlignment: WrapAlignment.spaceBetween,
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: widget.model!
+                                        .getTimeSlots(activeDay)
+                                        .map(
+                                      (slot) {
+                                        var isReserved = _reservedAppointments
+                                            .any((appointment) {
+                                          return appointment.slot == slot;
+                                        });
+                                        return GestureDetector(
+                                          onTap: () {
+                                            if (isReserved) return;
+                                            _showConfirmationDialog(
+                                              context,
+                                              slot,
+                                            );
+                                          },
+                                          child: timeSlotCard(
+                                            slot: slot,
+                                            active: !isReserved,
+                                          ),
+                                        );
+                                      },
+                                    ).toList(),
                                   ),
-                                )
-                              : Wrap(
-                                  direction: Axis.horizontal,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  runAlignment: WrapAlignment.spaceBetween,
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children:
-                                      widget.model!.getTimeSlots(activeDay).map(
-                                    (slot) {
-                                      var isReserved = _reservedAppointments
-                                          .any((appointment) {
-                                        return appointment.slot == slot;
-                                      });
-                                      return GestureDetector(
-                                        onTap: () {
-                                          if (isReserved) return;
-                                          _showConfirmationDialog(
-                                            context,
-                                            slot,
-                                          );
-                                        },
-                                        child: timeSlotCard(
-                                          slot: slot,
-                                          active: !isReserved,
-                                        ),
-                                      );
-                                    },
-                                  ).toList(),
-                                ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

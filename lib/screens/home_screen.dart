@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:med_app/components/appointment_card.dart';
 import 'package:med_app/constants.dart';
@@ -31,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late StreamSubscription<List<AppointmentModel>> _appointmentsSubscription;
   List<AppointmentModel> _appointments = [];
   bool _appointmentsLoading = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -55,8 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
         .listen((appointments) {
       setState(() {
         _appointments = appointments;
-        _appointmentsLoading =
-            false; // Set to false when appointments are loaded
+        _appointmentsLoading = false;
       });
     }, onError: (error) {
       setState(() {
@@ -84,21 +83,58 @@ class _HomeScreenState extends State<HomeScreen> {
     return _user == null
         ? LoginScreen()
         : Scaffold(
+            key: _scaffoldKey,
+            drawer: SidebarScreen(
+              currentUser: _user as User,
+              onAppointmentIconClick: () {
+                setState(() {
+                  _selectedIndex = 1;
+                });
+                _pageController.animateToPage(
+                  1,
+                  duration: const Duration(milliseconds: 50),
+                  curve: Curves.ease,
+                );
+                _pageController.jumpToPage(1);
+              },
+              onMedicationIconClick: () {
+                setState(() {
+                  _selectedIndex = 2;
+                });
+                _pageController.animateToPage(
+                  2,
+                  duration: const Duration(milliseconds: 50),
+                  curve: Curves.ease,
+                );
+                _pageController.jumpToPage(2);
+              },
+              onClose: () {
+                if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
             body: Stack(children: [
-              PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
+              GestureDetector(
+                onTap: () {
+                  if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+                    Navigator.of(context).pop();
+                  }
                 },
-                children: [
-                  mainView(context),
-                  appointmentsView(context, _appointments),
-                  medicationView(context),
-                ],
-              ),
-              // const SidebarScreen()
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  },
+                  children: [
+                    mainView(context),
+                    appointmentsView(context, _appointments),
+                    medicationView(context),
+                  ],
+                ),
+              )
             ]),
             bottomNavigationBar: bottomBar(),
           );
@@ -177,7 +213,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: CircularProgressIndicator(),
                   );
                 }
-                // Ensure that snapShot.data is not null
                 if (!snapShot.hasData || snapShot.data == null) {
                   return const Center(child: Text("No doctors found"));
                 }
@@ -343,6 +378,11 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _selectedIndex = index;
         });
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.ease,
+        );
         _pageController.jumpToPage(index);
       },
       tabs: const [
@@ -382,10 +422,19 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.sort_outlined,
-                    color: Colors.white,
-                    size: 30,
+                  IconButton(
+                    onPressed: () {
+                      if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+                        Navigator.of(context).pop();
+                      } else {
+                        _scaffoldKey.currentState?.openDrawer();
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.sort_outlined,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                   const Spacer(),
                   CircleAvatar(

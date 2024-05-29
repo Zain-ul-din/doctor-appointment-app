@@ -32,7 +32,21 @@ var sidebarItems = [
         end: Alignment.bottomRight,
         colors: [Color(0xFFFA7d75), Color(0xFFC23D61)]),
     icon: const Icon(
-      Icons.library_books,
+      Icons.local_hospital,
+      color: Colors.white,
+    ),
+  ),
+  SidebarItem(
+    title: "Appointments",
+    background: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF36D1DC),
+          Color(0xFF5B86E5),
+        ]),
+    icon: const Icon(
+      Icons.calendar_month,
       color: Colors.white,
     ),
   ),
@@ -43,7 +57,7 @@ var sidebarItems = [
         end: Alignment.bottomRight,
         colors: [Color(0xFFFAD64A), Color(0xFFEA880F)]),
     icon: const Icon(
-      Icons.credit_card,
+      Icons.medication_liquid_outlined,
       color: Colors.white,
     ),
   ),
