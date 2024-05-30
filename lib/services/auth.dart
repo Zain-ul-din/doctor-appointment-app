@@ -11,6 +11,17 @@ class AuthService {
   User? get getUser => _auth.currentUser;
   Stream<User?> get user => _auth.userChanges();
 
+  Future<String?> getUserName() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      return user.displayName;
+      // DocumentSnapshot userDoc =
+      //     await _db.collection('users').doc(user.uid).get();
+      // return userDoc.data()?[''] ?? user.displayName;
+    }
+    return null;
+  }
+
   Future<User?> googleSignIn() async {
     try {
       GoogleSignInAccount? googleSignInAccount = await _googleSigin.signIn();

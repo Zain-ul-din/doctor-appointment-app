@@ -41,7 +41,7 @@ class AppointmentCard extends StatelessWidget {
         ),
         title: Text(
           appointment.doctorDisplayName,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
           ),
@@ -56,24 +56,29 @@ class AppointmentCard extends StatelessWidget {
                 color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 4.0),
+            SizedBox(height: 2.0),
+            Text(
+              'Patient Name: ${appointment.patientName}',
+              style:
+                  const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
+            ),
             Text(
               'Timing: $appointmentDate, $appointmentTime',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12.0,
               ),
             ),
           ],
         ),
         trailing: Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
           decoration: BoxDecoration(
             color: _getStatusColor(appointment.status),
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Text(
             appointment.status,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
         ),
         isThreeLine: true,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:med_app/constants.dart';
+import 'package:med_app/services/auth.dart';
 import 'package:med_app/services/firestore.dart';
 import 'package:med_app/services/models.dart';
 import 'package:med_app/util.dart';
@@ -360,16 +361,70 @@ class _HealthProviderDetailsScreenState
     );
   }
 
-// Method to show the confirmation dialog
-  void _showConfirmationDialog(BuildContext context, String slot) {
+  final AuthService _authService = AuthService();
+
+  void _showConfirmationDialog(BuildContext context, String slot) async {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController ageController = TextEditingController();
+    final TextEditingController phoneController = TextEditingController();
+    final _formKey = GlobalKey<FormState>();
+
+    String? userName = await _authService.getUserName();
+    if (userName != null) {
+      nameController.text = userName;
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: kBackgroundColor,
           title: const Text('Confirm Appointment'),
-          content: Text(
-            'Do you want to confirm your appointment for ${_selectedDay.toLocal().toString().split(' ')[0]} $slot?',
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(labelText: 'Name'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: ageController,
+                  decoration: const InputDecoration(labelText: 'Age'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your age';
+                    }
+                    if (int.tryParse(value) == null || int.parse(value) < 0) {
+                      return 'Please enter a valid age';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: phoneController,
+                  decoration: InputDecoration(labelText: 'Phone Number'),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value)) {
+                      return 'Please enter a valid phone number';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -379,18 +434,20 @@ class _HealthProviderDetailsScreenState
               },
             ),
             TextButton(
-              child: const Text(
-                'Confirm',
-              ),
+              child: const Text('Confirm'),
               onPressed: () {
-                FireStoreService().createAppointment(
-                  doctorModel: widget.doctorModel!,
-                  healthProviderModel: widget.model!,
-                  selectedSlot: slot,
-                  appointmentDate: _selectedDay,
-                );
-                // Add your appointment confirmation logic here
-                Navigator.of(context).pop();
+                if (_formKey.currentState!.validate()) {
+                  FireStoreService().createAppointment(
+                    doctorModel: widget.doctorModel!,
+                    healthProviderModel: widget.model!,
+                    selectedSlot: slot,
+                    appointmentDate: _selectedDay,
+                    patientName: nameController.text,
+                    patientAge: int.parse(ageController.text),
+                    phoneNumber: phoneController.text,
+                  );
+                  Navigator.of(context).pop();
+                }
               },
             ),
           ],

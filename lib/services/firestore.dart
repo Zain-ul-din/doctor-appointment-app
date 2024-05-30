@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:med_app/services/auth.dart';
 import 'package:med_app/services/models.dart';
 import 'package:med_app/util.dart';
@@ -222,12 +221,14 @@ class FireStoreService {
         .toList();
   }
 
-  Future<void> createAppointment({
-    required DoctorModel doctorModel,
-    required HealthProviderModel healthProviderModel,
-    required String selectedSlot,
-    required DateTime appointmentDate,
-  }) async {
+  Future<void> createAppointment(
+      {required DoctorModel doctorModel,
+      required HealthProviderModel healthProviderModel,
+      required String selectedSlot,
+      required DateTime appointmentDate,
+      required String patientName,
+      required int patientAge,
+      required String phoneNumber}) async {
     if (AuthService().getUser == null) return;
     var user = AuthService().getUser as User;
     String weekDay = Util().getWeekDayName(appointmentDate.weekday);
@@ -236,7 +237,10 @@ class FireStoreService {
     try {
       await _db.collection('appointments').add({
         'patient_id': user.uid,
-        'patient_name': user.displayName,
+        'patient_name': patientName,
+        'patient_age': patientAge,
+        'patient_phone_no': phoneNumber,
+        'acc_display_name': user.displayName,
         'doctor_id': doctorModel.userId,
         'doctor_display_name': doctorModel.fullName,
         'doctor_avatar': doctorModel.photoURL,
