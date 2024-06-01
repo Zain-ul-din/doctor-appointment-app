@@ -254,6 +254,27 @@ class FireStoreService {
         'status': 'pending',
         'appointment_date': appointmentDate,
       });
+
+      // Create or update notification message document
+      String messageDocId = '${user.uid}-${doctorModel.userId}';
+      await _db.collection('messages').doc(messageDocId).set({
+        'patient_name': user.displayName,
+        'patient_id': user.uid,
+        'patient_avatar': user.photoURL,
+        'doctor_avatar': doctorModel.photoURL,
+        'doctor_display_name': doctorModel.fullName,
+        'timestamp': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      // Create a sub-collection for conversations
+      await _db.collection('messages').doc(messageDocId).collection('conversations').add({
+        'message': 'created Appointment for $patientName',
+        'sender_id': user.uid,
+        'sender_name': patientName,
+        'type': 'activity',
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
       print('Appointment created successfully');
     } catch (e) {
       print('Failed to create appointment: $e');
