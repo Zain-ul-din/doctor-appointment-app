@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:med_app/components/appointment_card.dart';
+import 'package:med_app/components/medication_card.dart';
 import 'package:med_app/constants.dart';
 import 'package:med_app/screens/loading_screen.dart';
 import 'package:med_app/screens/login_screen.dart';
@@ -31,6 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<AppointmentModel> _appointments = [];
   bool _appointmentsLoading = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  late StreamSubscription<List<MedicationDoc>> _medicationsSubscription;
+  List<MedicationDoc> _medications = [];
+  bool _medicationsLoading = true;
 
   @override
   void initState() {
@@ -64,6 +69,20 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     });
     _doctorsFuture = FireStoreService().getTopTenDoctors();
+
+    // Subscribe to medication documents stream
+    _medicationsSubscription =
+        FireStoreService().streamMedicationsByUserId().listen((medications) {
+      setState(() {
+        _medications = medications;
+        _medicationsLoading = false;
+      });
+    }, onError: (error) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    });
   }
 
   @override
@@ -71,6 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _userSubscription.cancel();
     _appointmentsSubscription.cancel();
     _pageController.dispose();
+    _medicationsSubscription.cancel();
     super.dispose();
   }
 
@@ -131,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     mainView(context),
                     appointmentsView(context, _appointments),
-                    medicationView(context),
+                    medicationView(context, _medications),
                   ],
                 ),
               )
@@ -283,15 +303,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   ));
   }
 
-  Scaffold medicationView(BuildContext ctx) {
+  Scaffold medicationView(BuildContext ctx, List<MedicationDoc> medications) {
     return Scaffold(
-      backgroundColor: kBackgroundColor,
-      body: Center(
-        child: Text(
-          "Medication",
-          style: kTitle1Style,
+      backgroundColor: Colors.indigoAccent.shade100,
+      appBar: AppBar(
+        backgroundColor: Colors.indigoAccent.shade100,
+        title: Text(
+          "Medications",
+          style: kCardTitleStyle,
         ),
       ),
+      body: _medicationsLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : medications.isEmpty
+              ? Center(
+                  child: Text(
+                    "No Medications",
+                    style: kTitle1Style.copyWith(color: Colors.white),
+                  ),
+                )
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: medications.map((medication) {
+                        return MedicationCard(
+                          medication: medication,
+                        );
+                        // return MedicationCard(medication: medication);
+                      }).toList(),
+                    ),
+                  ),
+                ),
     );
   }
 

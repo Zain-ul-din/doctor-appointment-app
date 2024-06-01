@@ -267,3 +267,106 @@ class AppointmentModel {
     };
   }
 }
+
+class MedicationDoc {
+  String name;
+  int duration;
+  String description;
+  String doctorId;
+  Timestamp createdAt;
+  Timestamp updatedAt;
+  Map<String, Map<String, List<Variant>>> variants;
+  Map<String, dynamic> days;
+  bool? isPublic;
+  String uid;
+  List<String> subscribers;
+
+  MedicationDoc({
+    required this.name,
+    required this.duration,
+    required this.description,
+    required this.doctorId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.variants,
+    required this.days,
+    this.isPublic,
+    required this.uid,
+    required this.subscribers,
+  });
+
+  factory MedicationDoc.fromJson(Map<String, dynamic> json) {
+    Map<String, Map<String, List<Variant>>> variants = {};
+    json['variants'].forEach((key, value) {
+      Map<String, List<Variant>> timeMap = {};
+      value.forEach((time, variantList) {
+        timeMap[time] = List<Variant>.from(
+            variantList.map((variant) => Variant.fromJson(variant)));
+      });
+      variants[key] = timeMap;
+    });
+
+    return MedicationDoc(
+      name: json['name'],
+      duration: json['duration'],
+      description: json['description'],
+      doctorId: json['doctor_id'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
+      variants: variants,
+      days: json['days'],
+      isPublic: json['public'],
+      uid: json['uid'],
+      subscribers: List<String>.from(json['subscribers']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, Map<String, dynamic>> variantsJson = {};
+    variants.forEach((key, value) {
+      Map<String, List<Map<String, dynamic>>> timeMap = {};
+      value.forEach((time, variantList) {
+        timeMap[time] = variantList.map((variant) => variant.toJson()).toList();
+      });
+      variantsJson[key] = timeMap;
+    });
+
+    return {
+      'name': name,
+      'duration': duration,
+      'description': description,
+      'doctor_id': doctorId,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+      'variants': variantsJson,
+      'days': days,
+      'public': isPublic,
+      'uid': uid,
+      'subscribers': subscribers,
+    };
+  }
+}
+
+class Variant {
+  String name;
+  int qt;
+
+  Variant({
+    required this.name,
+    required this.qt,
+  });
+
+  factory Variant.fromJson(Map<String, dynamic> json) {
+    return Variant(
+      name: json['name'],
+      qt: json['qt'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'qt': qt,
+    };
+  }
+}

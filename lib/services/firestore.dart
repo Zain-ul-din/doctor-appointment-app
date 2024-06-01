@@ -299,4 +299,15 @@ class FireStoreService {
             .map((doc) => AppointmentModel.fromJson(doc.data()))
             .toList());
   }
+
+  Stream<List<MedicationDoc>> streamMedicationsByUserId() {
+    var user = AuthService().getUser as User;
+    return _db
+        .collection('medications')
+        .where('subscribers', arrayContains: user.uid)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MedicationDoc.fromJson(doc.data()))
+            .toList());
+  }
 }
