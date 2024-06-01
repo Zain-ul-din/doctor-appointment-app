@@ -264,15 +264,22 @@ class FireStoreService {
         'doctor_avatar': doctorModel.photoURL,
         'doctor_display_name': doctorModel.fullName,
         'timestamp': FieldValue.serverTimestamp(),
+        'doctor_id': doctorModel.userId,
+        'uid': messageDocId
       }, SetOptions(merge: true));
 
       // Create a sub-collection for conversations
-      await _db.collection('messages').doc(messageDocId).collection('conversations').add({
+      await _db
+          .collection('messages')
+          .doc(messageDocId)
+          .collection('conversations')
+          .add({
         'message': 'created Appointment for $patientName',
         'sender_id': user.uid,
-        'sender_name': patientName,
+        'sender_name': user.displayName,
         'type': 'activity',
         'timestamp': FieldValue.serverTimestamp(),
+        'sender': 'patient'
       });
 
       print('Appointment created successfully');
