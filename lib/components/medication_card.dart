@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:med_app/services/firestore.dart';
 import 'package:med_app/services/models.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -54,11 +55,26 @@ class _MedicationCardState extends State<MedicationCard> {
   late DateTime _startDate = DateTime.now();
   late DateTime _lastDate = DateTime.now();
 
+  DoctorModel? _doctor;
+
   @override
   void initState() {
     super.initState();
     _localStorageService = LocalStorageService();
     _initializeMedicationData();
+    _fetchDoctorDetails();
+  }
+
+  Future<void> _fetchDoctorDetails() async {
+    try {
+      DoctorModel doctor =
+          await FireStoreService().getDoctorById(widget.medication.doctorId);
+      setState(() {
+        _doctor = doctor;
+      });
+    } catch (e) {
+      print("Error fetching doctor details: $e");
+    }
   }
 
   Future<void> _initializeMedicationData() async {
@@ -89,6 +105,18 @@ class _MedicationCardState extends State<MedicationCard> {
       color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
       child: ListTile(
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: _doctor != null
+              ? Image.network(
+                  _doctor!
+                      .photoURL, // Assuming MedicationDoc has an imageUrl field
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                )
+              : const Text(''),
+        ),
         title: Text(
           widget.medication.name, // Assuming MedicationDoc has a name field
           style: const TextStyle(
@@ -99,6 +127,13 @@ class _MedicationCardState extends State<MedicationCard> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_doctor != null) ...[
+              Text(
+                'Created by: ${_doctor!.fullName}',
+                style: const TextStyle(fontSize: 12.0),
+              ),
+              const SizedBox(height: 2.0),
+            ],
             Text(
               'Start Date: ${DateFormat.yMMMd().format(_startDate)}',
               style: const TextStyle(fontSize: 12.0),

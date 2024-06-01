@@ -310,4 +310,19 @@ class FireStoreService {
             .map((doc) => MedicationDoc.fromJson(doc.data()))
             .toList());
   }
+
+  Future<DoctorModel> getDoctorById(String doctorId) async {
+    try {
+      DocumentSnapshot doc =
+          await _db.collection('doctors').doc(doctorId).get();
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data == null) {
+        throw Exception("Doctor not found");
+      }
+      return DoctorModel.fromJson(data);
+    } catch (e) {
+      print("Error getting doctor: $e");
+      throw e;
+    }
+  }
 }
