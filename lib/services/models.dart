@@ -22,53 +22,57 @@ class DoctorModel {
   bool? isVerified;
   bool? isRejected;
   String? rejectionReason;
+  String displayName;
+  double rating;
   final List<String> specialization;
   final List<String> locations;
 
-  DoctorModel({
-    required this.title,
-    required this.fullName,
-    required this.yearOfExperience,
-    required this.primarySpecialization,
-    required this.secondarySpecializations,
-    required this.conditionsTreated,
-    required this.pmdcRegistrationNumber,
-    required this.userId,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.phoneNumber,
-    required this.email,
-    required this.photoURL,
-    required this.markdown,
-    required this.locations,
-    required this.specialization,
-    this.isVerified,
-    this.isRejected,
-    this.rejectionReason,
-  });
+  DoctorModel(
+      {required this.title,
+      required this.fullName,
+      required this.yearOfExperience,
+      required this.primarySpecialization,
+      required this.secondarySpecializations,
+      required this.conditionsTreated,
+      required this.pmdcRegistrationNumber,
+      required this.userId,
+      required this.createdAt,
+      required this.updatedAt,
+      required this.phoneNumber,
+      required this.email,
+      required this.photoURL,
+      required this.markdown,
+      required this.locations,
+      required this.specialization,
+      this.isVerified,
+      this.isRejected,
+      this.rejectionReason,
+      required this.displayName,
+      required this.rating});
 
   factory DoctorModel.fromJson(Map<String, dynamic> json) {
     return DoctorModel(
-      title: json['title'],
-      fullName: json['fullName'],
-      yearOfExperience: json['yearOfExperience'],
-      primarySpecialization: json['primarySpecialization'],
-      secondarySpecializations: json['secondarySpecializations'],
-      conditionsTreated: List<String>.from(json['conditionsTreated']),
-      locations: List<String>.from(json['locations']),
-      specialization: List<String>.from(json['specialization']),
-      pmdcRegistrationNumber: json['pmdcRegistrationNumber'],
-      userId: json['userId'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
-      phoneNumber: json['phone_number'],
-      email: json['email'],
-      photoURL: json['photoURL'],
-      markdown: json['markdown'],
-      isVerified: json['isVerified'],
-      isRejected: json['isRejected'],
-      rejectionReason: json['rejectionReason'],
-    );
+        title: json['title'],
+        fullName: json['fullName'],
+        rating: json['rating'] + 0.0,
+        yearOfExperience: json['yearOfExperience'],
+        primarySpecialization: json['primarySpecialization'],
+        secondarySpecializations: json['secondarySpecializations'],
+        conditionsTreated: List<String>.from(json['conditionsTreated']),
+        locations: List<String>.from(json['locations']),
+        specialization: List<String>.from(json['specialization']),
+        pmdcRegistrationNumber: json['pmdcRegistrationNumber'],
+        userId: json['userId'],
+        createdAt: json['createdAt'],
+        updatedAt: json['updatedAt'],
+        phoneNumber: json['phone_number'],
+        email: json['email'],
+        photoURL: json['photoURL'],
+        markdown: json['markdown'],
+        isVerified: json['isVerified'],
+        isRejected: json['isRejected'],
+        rejectionReason: json['rejectionReason'],
+        displayName: json['displayName']);
   }
 
   Map<String, dynamic> toJson() {
@@ -90,6 +94,8 @@ class DoctorModel {
       'isVerified': isVerified,
       'isRejected': isRejected,
       'rejectionReason': rejectionReason,
+      'displayName': displayName,
+      'rating': rating
     };
   }
 }

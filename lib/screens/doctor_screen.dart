@@ -71,7 +71,7 @@ class _DoctorScreen extends State<DoctorScreen> {
                               ),
                               const SizedBox(height: 12.0),
                               Text(
-                                doctor.fullName,
+                                doctor.displayName,
                                 style: kCardTitleStyle.copyWith(
                                     height: 1.0, color: Colors.black),
                               ),
@@ -100,13 +100,13 @@ class _DoctorScreen extends State<DoctorScreen> {
                                   child: Column(
                                     children: [
                                       Text(
-                                        "350+",
+                                        "${doctor.rating}",
                                         style: kLargeTitleStyle.copyWith(
                                           color: Colors.indigoAccent.shade100,
                                         ),
                                       ),
                                       Text(
-                                        "Patients",
+                                        "Rating",
                                         style: kSubtitleStyle,
                                       )
                                     ],
@@ -124,13 +124,13 @@ class _DoctorScreen extends State<DoctorScreen> {
                                   child: Column(
                                     children: [
                                       Text(
-                                        "350+",
+                                        doctor.yearOfExperience.padLeft(2, '0'),
                                         style: kLargeTitleStyle.copyWith(
                                           color: Colors.indigoAccent.shade100,
                                         ),
                                       ),
                                       Text(
-                                        "Patients",
+                                        "Experience",
                                         style: kSubtitleStyle,
                                       )
                                     ],
@@ -148,7 +148,7 @@ class _DoctorScreen extends State<DoctorScreen> {
                                   child: Column(
                                     children: [
                                       Text(
-                                        "350+",
+                                        "000",
                                         style: kLargeTitleStyle.copyWith(
                                           color: Colors.indigoAccent.shade100,
                                         ),

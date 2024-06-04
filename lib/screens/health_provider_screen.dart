@@ -52,7 +52,8 @@ class _HealthProviderDetailsScreenState
 
     if (oldWidget.model == null || oldWidget.model!.id != widget.model!.id) {
       _subscription = _fireStoreService
-          .streamAppointmentsByHealthProviderId(widget.model!.id)
+          .streamAppointmentsByHealthProviderId(
+              widget.model != null ? widget.model!.id : '')
           .listen((appointments) {
         setState(() {
           _appointments = appointments;

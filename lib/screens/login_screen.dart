@@ -34,7 +34,7 @@ class LoginScreenState extends State<LoginScreen>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 5), () {
+    Timer(const Duration(seconds: 4), () {
       _controller.stop();
       _controller.reset();
     });

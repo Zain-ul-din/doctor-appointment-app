@@ -595,7 +595,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        model.fullName,
+                        model.displayName,
                         maxLines: 2,
                         style: kCardTitleStyle.copyWith(height: 1.0),
                       ),
@@ -609,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Icon(Icons.star, color: Colors.yellow),
                           Text(
-                            "4.5",
+                            "${model.rating}",
                             style: kBodyLabelStyle.copyWith(
                               color: Colors.white,
                             ),
