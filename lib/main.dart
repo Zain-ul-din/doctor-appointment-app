@@ -8,6 +8,7 @@ import 'package:med_app/screens/doctor_screen.dart';
 import 'package:med_app/screens/doctors_screen.dart';
 import 'package:med_app/screens/home_screen.dart';
 import 'package:med_app/screens/loading_screen.dart';
+import 'package:med_app/screens/medication_screen.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -97,7 +98,8 @@ class AppRoutes extends StatelessWidget {
       routes: {
         '/': (ctx) => const HomeScreen(),
         '/doctor': (ctx) => const DoctorScreen(),
-        '/doctors': (ctx) => const DoctorsScreen()
+        '/doctors': (ctx) => const DoctorsScreen(),
+        '/medication': (ctx) => const MedicationScreen()
       },
       // home: const HomeScreen(),
     );

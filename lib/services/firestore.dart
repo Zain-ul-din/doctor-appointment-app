@@ -301,10 +301,10 @@ class FireStoreService {
   }
 
   Stream<List<MedicationDoc>> streamMedicationsByUserId() {
-    var user = AuthService().getUser as User;
+    var user = AuthService().getUser as User?;
     return _db
         .collection('medications')
-        .where('subscribers', arrayContains: user.uid)
+        .where('subscribers', arrayContains: user != null ? user.uid : '')
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => MedicationDoc.fromJson(doc.data()))

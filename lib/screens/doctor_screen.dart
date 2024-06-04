@@ -262,7 +262,7 @@ class _DoctorScreen extends State<DoctorScreen> {
             vertical: 16,
             horizontal: 12,
           ),
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxWidth: 300,
           ),
           decoration: BoxDecoration(

@@ -37,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<MedicationDoc> _medications = [];
   bool _medicationsLoading = true;
 
+  bool _showLoginScreen = true; // New state variable
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +85,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     });
+
+    // Set a timer to show the login screen for a specified duration
+    Timer(const Duration(seconds: 5), () {
+      setState(() {
+        _showLoginScreen = false;
+      });
+    });
   }
 
   @override
@@ -100,8 +109,10 @@ class _HomeScreenState extends State<HomeScreen> {
       return const LoadingScreen();
     }
 
-    return _user == null
-        ? LoginScreen()
+    return _showLoginScreen || _user == null
+        ? LoginScreen(
+            hideLoginButton: _user != null,
+          )
         : Scaffold(
             key: _scaffoldKey,
             drawer: SidebarScreen(

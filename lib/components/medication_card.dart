@@ -101,50 +101,59 @@ class _MedicationCardState extends State<MedicationCard> {
       return CircularProgressIndicator();
     }
 
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-      child: ListTile(
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8.0),
-          child: _doctor != null
-              ? Image.network(
-                  _doctor!
-                      .photoURL, // Assuming MedicationDoc has an imageUrl field
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                )
-              : const Text(''),
-        ),
-        title: Text(
-          widget.medication.name, // Assuming MedicationDoc has a name field
-          style: const TextStyle(
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/medication',
+          arguments: widget.medication,
+        );
+      },
+      child: Card(
+        color: Colors.white,
+        margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+        child: ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: _doctor != null
+                ? Image.network(
+                    _doctor!
+                        .photoURL, // Assuming MedicationDoc has an imageUrl field
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  )
+                : const Text(''),
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_doctor != null) ...[
+          title: Text(
+            widget.medication.name, // Assuming MedicationDoc has a name field
+            style: const TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_doctor != null) ...[
+                Text(
+                  'Created by: ${_doctor!.fullName}',
+                  style: const TextStyle(fontSize: 12.0),
+                ),
+                const SizedBox(height: 2.0),
+              ],
               Text(
-                'Created by: ${_doctor!.fullName}',
+                'Start Date: ${DateFormat.yMMMd().format(_startDate)}',
                 style: const TextStyle(fontSize: 12.0),
               ),
-              const SizedBox(height: 2.0),
+              Text(
+                'End Date: ${DateFormat.yMMMd().format(_lastDate)}',
+                style: const TextStyle(fontSize: 12.0),
+              ),
             ],
-            Text(
-              'Start Date: ${DateFormat.yMMMd().format(_startDate)}',
-              style: const TextStyle(fontSize: 12.0),
-            ),
-            Text(
-              'End Date: ${DateFormat.yMMMd().format(_lastDate)}',
-              style: const TextStyle(fontSize: 12.0),
-            ),
-          ],
+          ),
+          isThreeLine: true,
         ),
-        isThreeLine: true,
       ),
     );
   }
