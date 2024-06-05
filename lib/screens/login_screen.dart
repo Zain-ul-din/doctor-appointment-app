@@ -17,7 +17,7 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   AuthService authService = AuthService();
-  late AnimationController _controller = AnimationController(
+  late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 3),
   );
@@ -27,23 +27,25 @@ class LoginScreenState extends State<LoginScreen>
     super.initState();
 
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
+      if (status == AnimationStatus.completed && !_controller.isDismissed) {
         _controller.stop();
       }
     });
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 4), () {
-      _controller.stop();
-      _controller.reset();
+    Timer(const Duration(seconds: 3), () {
+      if (!_controller.isDismissed) {
+        _controller.stop();
+        _controller.reset();
+      }
     });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     super.dispose();
+    _controller.dispose();
   }
 
   @override

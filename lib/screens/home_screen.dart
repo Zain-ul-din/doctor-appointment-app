@@ -37,12 +37,15 @@ class _HomeScreenState extends State<HomeScreen> {
   List<MedicationDoc> _medications = [];
   bool _medicationsLoading = true;
 
-  bool _showLoginScreen = true; // New state variable
+  bool _showLoginScreen = true;
+  bool _initialNavigationHandled = false;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+
+    // final doctor = ModalRoute.of(context)!.settings.arguments as DoctorModel;
+
     _userSubscription = AuthService().user.listen(
       (user) {
         setState(() {
@@ -92,6 +95,28 @@ class _HomeScreenState extends State<HomeScreen> {
         _showLoginScreen = false;
       });
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_initialNavigationHandled) {
+      final int activeScreen =
+          ModalRoute.of(context)!.settings.arguments as int? ?? -1;
+      if (activeScreen != -1) {
+        setState(() {
+          _showLoginScreen = false;
+          _selectedIndex = activeScreen;
+        });
+
+        _pageController = PageController(initialPage: activeScreen);
+
+        _initialNavigationHandled = true;
+      } else {
+        _pageController = PageController(initialPage: 0);
+      }
+    }
   }
 
   @override
@@ -171,7 +196,13 @@ class _HomeScreenState extends State<HomeScreen> {
           );
   }
 
+  bool firstRender = true;
+
   Scaffold mainView(BuildContext ctx) {
+    if (firstRender) {
+      firstRender = false;
+    }
+
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SingleChildScrollView(
@@ -179,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            header(),
+            header(ctx),
             contentHeader(
                 title: "Specialization",
                 onTap: () {
@@ -458,7 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Container header() {
+  Container header(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.indigoAccent.shade100,
@@ -532,7 +563,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   FocusManager.instance.primaryFocus?.unfocus();
                 },
                 onTap: () {
-                  // tap
+                  Navigator.pushNamed(context, '/doctors',
+                      arguments: DoctorsFilter(showFilter: true));
                 },
                 readOnly: true,
                 decoration: InputDecoration(

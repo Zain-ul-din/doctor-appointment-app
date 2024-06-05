@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'package:med_app/firebase_options.dart';
+import 'package:med_app/screens/chat_screen.dart';
 import 'package:med_app/screens/doctor_screen.dart';
 import 'package:med_app/screens/doctors_screen.dart';
 import 'package:med_app/screens/home_screen.dart';
@@ -99,7 +100,8 @@ class AppRoutes extends StatelessWidget {
         '/': (ctx) => const HomeScreen(),
         '/doctor': (ctx) => const DoctorScreen(),
         '/doctors': (ctx) => const DoctorsScreen(),
-        '/medication': (ctx) => const MedicationScreen()
+        '/medication': (ctx) => const MedicationScreen(),
+        '/chat': (ctx) => const ChatScreen()
       },
       // home: const HomeScreen(),
     );

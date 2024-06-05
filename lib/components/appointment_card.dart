@@ -26,62 +26,68 @@ class AppointmentCard extends StatelessWidget {
         DateFormat.yMMMd().format(appointment.appointmentDate.toDate());
     final appointmentTime = appointment.slot;
 
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-      child: ListTile(
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8.0),
-          child: Image.network(
-            appointment.doctorAvatar,
-            width: 60,
-            height: 60,
-            fit: BoxFit.cover,
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(context, '/chat',
+            arguments: '${appointment.patientId}-${appointment.doctorId}');
+      },
+      child: Card(
+        color: Colors.white,
+        margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+        child: ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.network(
+              appointment.doctorAvatar,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        title: Text(
-          appointment.doctorDisplayName,
-          style: const TextStyle(
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
+          title: Text(
+            appointment.doctorDisplayName,
+            style: const TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${appointment.healthProviderName}, ${appointment.healthProviderLocation}',
-              style: TextStyle(
-                fontSize: 12.0,
-                color: Colors.grey[600],
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${appointment.healthProviderName}, ${appointment.healthProviderLocation}',
+                style: TextStyle(
+                  fontSize: 12.0,
+                  color: Colors.grey[600],
+                ),
               ),
-            ),
-            SizedBox(height: 2.0),
-            Text(
-              'Patient Name: ${appointment.patientName}',
-              style:
-                  const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Timing: $appointmentDate, $appointmentTime',
-              style: const TextStyle(
-                fontSize: 12.0,
+              SizedBox(height: 2.0),
+              Text(
+                'Patient Name: ${appointment.patientName}',
+                style: const TextStyle(
+                    fontSize: 12.0, fontWeight: FontWeight.bold),
               ),
+              Text(
+                'Timing: $appointmentDate, $appointmentTime',
+                style: const TextStyle(
+                  fontSize: 12.0,
+                ),
+              ),
+            ],
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            decoration: BoxDecoration(
+              color: _getStatusColor(appointment.status),
+              borderRadius: BorderRadius.circular(12.0),
             ),
-          ],
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-          decoration: BoxDecoration(
-            color: _getStatusColor(appointment.status),
-            borderRadius: BorderRadius.circular(12.0),
+            child: Text(
+              appointment.status,
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
-          child: Text(
-            appointment.status,
-            style: const TextStyle(color: Colors.white),
-          ),
+          isThreeLine: true,
         ),
-        isThreeLine: true,
       ),
     );
   }

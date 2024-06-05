@@ -274,6 +274,35 @@ class AppointmentModel {
   }
 }
 
+class MessageDoc {
+  final String message;
+  final String senderId;
+  final String senderName;
+  final Timestamp timestamp;
+  final String type;
+  final String sender;
+
+  MessageDoc({
+    required this.message,
+    required this.senderId,
+    required this.senderName,
+    required this.timestamp,
+    required this.type,
+    required this.sender,
+  });
+
+  factory MessageDoc.fromJson(Map<String, dynamic> json) {
+    return MessageDoc(
+      message: json['message'],
+      senderId: json['sender_id'],
+      senderName: json['sender_name'],
+      timestamp: json['timestamp'],
+      type: json['type'],
+      sender: json['sender'],
+    );
+  }
+}
+
 class MedicationDoc {
   String name;
   int duration;
@@ -373,6 +402,54 @@ class Variant {
     return {
       'name': name,
       'qt': qt,
+    };
+  }
+}
+
+enum MessageType { activity, conversation, proposal }
+
+enum SenderType { patient, doctor }
+
+class ChatMessageDoc {
+  String doctorAvatar;
+  String doctorDisplayName;
+  String patientAvatar;
+  String patientId;
+  String patientName;
+  Timestamp timestamp;
+  String uid;
+
+  ChatMessageDoc({
+    required this.doctorAvatar,
+    required this.doctorDisplayName,
+    required this.patientAvatar,
+    required this.patientId,
+    required this.patientName,
+    required this.timestamp,
+    required this.uid,
+  });
+
+  factory ChatMessageDoc.fromJson(Map<String, dynamic> json) {
+    return ChatMessageDoc(
+      doctorAvatar: json['doctor_avatar'],
+      doctorDisplayName: json['doctor_display_name'],
+      patientAvatar: json['patient_avatar'],
+      patientId: json['patient_id'],
+      patientName: json['patient_name'],
+      timestamp: json['timestamp'],
+      uid: json['uid'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'doctor_avatar': doctorAvatar,
+      'doctor_display_name': doctorDisplayName,
+      'patient_avatar': patientAvatar,
+      'patient_id': patientId,
+      'patient_name': patientName,
+      'timestamp': timestamp,
+      'uid': uid,
     };
   }
 }

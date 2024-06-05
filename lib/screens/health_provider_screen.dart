@@ -436,9 +436,9 @@ class _HealthProviderDetailsScreenState
             ),
             TextButton(
               child: const Text('Confirm'),
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  FireStoreService().createAppointment(
+                  await FireStoreService().createAppointment(
                     doctorModel: widget.doctorModel!,
                     healthProviderModel: widget.model!,
                     selectedSlot: slot,
@@ -447,7 +447,8 @@ class _HealthProviderDetailsScreenState
                     patientAge: int.parse(ageController.text),
                     phoneNumber: phoneController.text,
                   );
-                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, '/', arguments: 1);
+                  // Navigator.of(context).pop();
                 }
               },
             ),

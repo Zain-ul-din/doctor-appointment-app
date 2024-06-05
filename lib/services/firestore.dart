@@ -242,7 +242,8 @@ class FireStoreService {
         'patient_phone_no': phoneNumber,
         'acc_display_name': user.displayName,
         'doctor_id': doctorModel.userId,
-        'doctor_display_name': doctorModel.fullName,
+        'doctor_display_name': doctorModel.displayName,
+        'doctor_name': doctorModel.fullName,
         'doctor_avatar': doctorModel.photoURL,
         'health_provider_id': healthProviderModel.id,
         'health_provider_location': healthProviderModel.location,
@@ -323,6 +324,60 @@ class FireStoreService {
     } catch (e) {
       print("Error getting doctor: $e");
       throw e;
+    }
+  }
+
+  Stream<List<MessageDoc>> streamChatById(String chatId) {
+    return FirebaseFirestore.instance
+        .collection('messages')
+        .doc(chatId)
+        .collection('conversations')
+        .orderBy('timestamp') // assuming timestamp is used to order messages
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+              return MessageDoc.fromJson(doc.data());
+            }).toList());
+  }
+
+  Future<ChatMessageDoc?> getChat(String chatId) async {
+    DocumentSnapshot<Map<String, dynamic>> messageDocSnapshot =
+        await FirebaseFirestore.instance
+            .collection('messages')
+            .doc(chatId)
+            .get();
+
+    if (messageDocSnapshot.exists) {
+      return ChatMessageDoc.fromJson(messageDocSnapshot.data()!);
+    } else {
+      return null;
+    }
+  }
+
+  void sendMessage(String chatId, String message) {
+    // Get the current logged-in user
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      FirebaseFirestore.instance
+          .collection('messages')
+          .doc(chatId)
+          .collection('conversations')
+          .add({
+        'message': message,
+        'sender_id': user.uid,
+        'sender_name': user.displayName ??
+            'Anonymous', // Using displayName or fallback to 'Anonymous'
+        'timestamp': Timestamp.now(),
+        'type': 'conversation', // Assuming it's a regular message for now
+        'sender':
+            'patient', // Assuming the sender is always the patient for now
+      }).then((_) {
+        print('Message sent successfully!');
+      }).catchError((error) {
+        print('Error sending message: $error');
+      });
+    } else {
+      print('Error: User is not logged in');
     }
   }
 }

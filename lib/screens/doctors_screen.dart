@@ -38,9 +38,12 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
   }
 
   Future<void> _extractArguments() async {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args != null && args is DoctorsFilter) {
+        if (args.showFilter != null) {
+          _showFilterOptions(context);
+        }
         setState(() {
           _selectedCityNotifier.value = args.location;
           _selectedSpecializationNotifier.value = args.specialization;
@@ -267,7 +270,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      model.fullName,
+                      model.displayName,
                       style: kTitle1Style,
                     ),
                     Text(
@@ -286,7 +289,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          "4.5",
+                          "${model.rating}",
                           style: TextStyle(
                             color: Colors.grey.shade700,
                           ),
