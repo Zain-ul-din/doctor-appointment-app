@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:med_app/components/sidebar_row.dart';
 import 'package:med_app/constants.dart';
 import 'package:med_app/models/sidebar.dart';
+import 'package:med_app/services/auth.dart';
 import 'package:provider/single_child_widget.dart';
 
 class SidebarScreen extends StatelessWidget {
@@ -125,7 +126,9 @@ class SidebarScreen extends StatelessWidget {
             ),
             const Spacer(),
             InkWell(
-              onTap: () {},
+              onTap: () {
+                AuthService().signOut();
+              },
               child: Ink(
                 color: Colors.transparent,
                 child: Padding(

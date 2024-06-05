@@ -69,4 +69,18 @@ class AuthService {
       'fcm_token': fcmToken, // Store FCM token
     }, SetOptions(merge: true));
   }
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  Future<void> signOut() async {
+    try {
+      // Sign out from Firebase authentication
+      await _auth.signOut();
+
+      // Sign out from Google if user was signed in with Google
+      await _googleSignIn.signOut();
+    } catch (err) {
+      print(err);
+    }
+  }
 }
