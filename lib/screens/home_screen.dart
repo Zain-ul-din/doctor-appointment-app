@@ -12,6 +12,7 @@ import 'package:med_app/services/auth.dart';
 import 'package:med_app/services/firestore.dart';
 import 'package:med_app/services/models.dart';
 import 'package:med_app/shared/DoctorsFilter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -524,6 +525,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const Spacer(),
+                  ElevatedButton(
+                      onPressed: () async {
+                        final Uri _url =
+                            Uri.parse('https://fyp-web-three.vercel.app/');
+                        if (!await launchUrl(_url)) {
+                          throw Exception('Could not launch $_url');
+                        }
+                      },
+                      child: const Text(
+                        "Join As a Doctor",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              8.0), // Adjust the value to make it less rounded
+                        ),
+                      )),
+                  const SizedBox(
+                    width: 12,
+                  ),
                   CircleAvatar(
                     radius: 21,
                     backgroundColor: Colors.white,
